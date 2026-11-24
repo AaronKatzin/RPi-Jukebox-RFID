@@ -11,6 +11,17 @@ import components.gpio_control.function_calls
 sys.path.append(".")
 
 
+def normalize_button_keycode(button_string):
+    """Join list or tuple evdev keycodes into one button-map key.
+
+    A tuple cannot be concatenated with "_args" (TypeError). isinstance
+    covers both list and tuple before that concatenation.
+    """
+    if isinstance(button_string, (list, tuple)):
+        return '-'.join(sorted(button_string))
+    return button_string
+
+
 try: # noqa C901
     functions = list(
         filter(lambda function_name: function_name.startswith("functionCall"),
@@ -33,9 +44,7 @@ try: # noqa C901
                 if event.type == ecodes.EV_KEY:
                     keyevent = categorize(event)
                     if keyevent.keystate == KeyEvent.key_down:
-                        button_string = keyevent.keycode
-                        if type(button_string) is list:
-                            button_string = '-'.join(sorted(button_string))
+                        button_string = normalize_button_keycode(keyevent.keycode)
 
                         function_args = input('Type argument for function (just enter for none): ').strip()
                         if not function_args:
